@@ -1,0 +1,15 @@
+.emoji {
+  position: absolute;
+  pointer-events: none;
+  z-index: 15;
+  animation: floatUp var(--dur, 4s) ease-in var(--delay, 0s) forwards;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+  line-height: 1;
+}
+
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg) scale(0); opacity: 0; }
+  10%  { transform: translateY(-5vh) rotate(calc(var(--rotate) * 0.3)) scale(1.2); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(-110vh) rotate(var(--rotate)) scale(0.8); opacity: 0; }
+}

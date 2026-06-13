@@ -1,0 +1,11 @@
+{
+  "name": "foto-show-api",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0"
+  }
+}

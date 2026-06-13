@@ -1,0 +1,129 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 560px;
+  max-width: 92vw;
+  animation: fadeIn 0.4s ease;
+}
+
+.sparkles {
+  font-size: 40px;
+  animation: float 2s ease-in-out infinite;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  min-height: 20px;
+}
+
+.progressWrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: visible;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.progressGlow {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent2);
+  box-shadow: 0 0 16px var(--accent2);
+  transition: left 0.4s ease;
+}
+
+.counter {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 44px;
+  text-align: right;
+}
+
+.thumbnails {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+  flex-shrink: 0;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: flex-end;
+  padding: 4px;
+}
+
+.thumbOverlay span {
+  font-size: 10px;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  min-height: 32px;
+}
+
+.pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  animation: fadeIn 0.3s ease;
+}
+
+.pill[data-mood="alegre"]     { color: #fbbf24; border: 1px solid #fbbf2440; }
+.pill[data-mood="festivo"]    { color: #f472b6; border: 1px solid #f472b640; }
+.pill[data-mood="aventureiro"]{ color: #34d399; border: 1px solid #34d39940; }
+.pill[data-mood="nostalgia"]  { color: #818cf8; border: 1px solid #818cf840; }
+.pill[data-mood="íntimo"]     { color: #fb923c; border: 1px solid #fb923c40; }
