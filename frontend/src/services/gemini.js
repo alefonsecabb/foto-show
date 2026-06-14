@@ -16,18 +16,37 @@ async function callGemini(parts) {
   const key = getApiKey();
   if (!key) throw new Error('API key not configured');
 
-  const res = await fetch(`${GEMINI_REST}?key=${key}`, {
+  const body = JSON.stringify({ contents: [{ parts }] });
+
+  // Try as API key (AIzaSy... format) first
+  let res = await fetch(`${GEMINI_REST}?key=${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts }] }),
+    body,
   });
+
+  // If rejected as API key, retry as OAuth2 Bearer token (AQ..., ya29... formats)
+  if (res.status === 400 || res.status === 401 || res.status === 403) {
+    const firstBody = await res.json().catch(() => ({}));
+    const isKeyError = firstBody.error?.status === 'INVALID_ARGUMENT'
+      || firstBody.error?.status === 'UNAUTHENTICATED'
+      || firstBody.error?.status === 'PERMISSION_DENIED';
+
+    if (isKeyError) {
+      res = await fetch(GEMINI_REST, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`,
+        },
+        body,
+      });
+    }
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = err.error?.message || `HTTP ${res.status}`;
-    if (res.status === 400 || res.status === 403 || res.status === 401) {
-      throw new Error(`Chave de API rejeitada pelo Gemini (${res.status}): ${msg}`);
-    }
     throw new Error(msg);
   }
 
