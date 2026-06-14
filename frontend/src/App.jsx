@@ -7,7 +7,7 @@ import Presentation from './components/Presentation';
 import styles from './App.module.css';
 
 function SetupScreen() {
-  const { setStep, photos, analyses, approvedAnimations } = usePresentationStore();
+  const { setStep, photos, analyses } = usePresentationStore();
   const analyzed = Object.keys(analyses).length;
   const ready = analyzed >= photos.length;
 

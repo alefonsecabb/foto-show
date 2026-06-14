@@ -8,12 +8,11 @@ export const STEPS = {
   PRESENTING: 'presenting',
 };
 
-export const usePresentationStore = create((set, get) => ({
+export const usePresentationStore = create((set) => ({
   step: STEPS.HOME,
   photos: [],
   analyses: {},
   analysisProgress: { done: 0, total: 0 },
-  approvedAnimations: {},
   spotifyToken: null,
   spotifyProfile: null,
   selectedTracks: [],
@@ -22,7 +21,7 @@ export const usePresentationStore = create((set, get) => ({
 
   setStep: (step) => set({ step }),
 
-  setPhotos: (photos) => set({ photos, analyses: {}, approvedAnimations: {} }),
+  setPhotos: (photos) => set({ photos, analyses: {} }),
 
   setAnalysis: (filename, analysis) =>
     set((s) => ({
@@ -36,11 +35,6 @@ export const usePresentationStore = create((set, get) => ({
   setAnalysisTotal: (total) =>
     set((s) => ({ analysisProgress: { ...s.analysisProgress, total } })),
 
-  setApprovedAnimation: (filename, approved) =>
-    set((s) => ({
-      approvedAnimations: { ...s.approvedAnimations, [filename]: approved },
-    })),
-
   setSpotifyToken: (token) => set({ spotifyToken: token }),
   setSpotifyProfile: (profile) => set({ spotifyProfile: profile }),
   setSelectedTracks: (tracks) => set({ selectedTracks: tracks }),
@@ -48,21 +42,12 @@ export const usePresentationStore = create((set, get) => ({
   setCurrentPhotoIndex: (index) => set({ currentPhotoIndex: index }),
   setFullscreen: (val) => set({ isFullscreen: val }),
 
-  getComedyPhotos: () => {
-    const { photos, analyses } = get();
-    return photos.filter((p) => {
-      const a = analyses[p.name];
-      return a && a.comedy_potential >= 0.7;
-    });
-  },
-
   reset: () =>
     set({
       step: STEPS.HOME,
       photos: [],
       analyses: {},
       analysisProgress: { done: 0, total: 0 },
-      approvedAnimations: {},
       spotifyToken: null,
       spotifyProfile: null,
       selectedTracks: [],
