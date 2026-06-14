@@ -4,7 +4,7 @@ import { readPhotoFiles, createObjectURL, resizeAndEncode, extractExif } from '.
 import { analyzePhoto } from '../services/gemini';
 import styles from './PhotoPicker.module.css';
 
-export default function PhotoPicker() {
+export default function PhotoPicker({ disabled = false }) {
   const [dragging, setDragging] = useState(false);
   const { setPhotos, setStep, setAnalysis, setAnalysisTotal } = usePresentationStore();
 
@@ -61,6 +61,17 @@ export default function PhotoPicker() {
     }
 
     setStep(STEPS.SETUP);
+  }
+
+  if (disabled) {
+    return (
+      <div className={styles.dropzone} style={{ opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' }}>
+        <div className={styles.icon}>📁</div>
+        <h2>Abrir pasta de fotos</h2>
+        <p>Configure a chave de API acima para continuar</p>
+        <span className={styles.hint}>JPG · PNG · WEBP · HEIC</span>
+      </div>
+    );
   }
 
   if (!isSupported) {
