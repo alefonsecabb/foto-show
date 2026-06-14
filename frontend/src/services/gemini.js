@@ -25,7 +25,9 @@ async function callGemini(parts) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = err.error?.message || `HTTP ${res.status}`;
-    if (res.status === 400 || res.status === 403) throw new Error(`API key inválida: ${msg}`);
+    if (res.status === 400 || res.status === 403 || res.status === 401) {
+      throw new Error(`Chave de API rejeitada pelo Gemini (${res.status}): ${msg}`);
+    }
     throw new Error(msg);
   }
 

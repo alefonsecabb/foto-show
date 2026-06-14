@@ -14,8 +14,7 @@ function ApiKeyBanner() {
   const [error, setError] = useState('');
 
   function handleSave() {
-    if (!key.trim()) { setError('Cole sua chave de API aqui.'); return; }
-    if (!key.startsWith('AI')) { setError('Chave inválida — começa com "AI...". Verifique no Google AI Studio.'); return; }
+    if (key.trim().length < 10) { setError('Cole sua chave de API aqui.'); return; }
     saveApiKey(key.trim());
     setSaved(true);
     setError('');
