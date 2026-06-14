@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://foto-show.vercel.app';
 
 export async function analyzePhoto(imageBase64, filename, exif = {}) {
   const res = await fetch(`${API_BASE}/api/analyze`, {
