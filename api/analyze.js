@@ -12,8 +12,8 @@ const ANALYSIS_PROMPT = `Analyze this photo and return ONLY valid JSON with this
   "music_valence": <float 0.0-1.0>,
   "comedy_potential": <float 0.0-1.0>,
   "comedy_suggestion": {
-    "character_0": "funny speech bubble text in Portuguese (max 12 words)",
-    "character_1": "funny speech bubble text in Portuguese (max 12 words, only if people_count >= 2)",
+    "character_0": "sarcastic or ironic speech bubble in Portuguese, max 12 words — funny and acidic",
+    "character_1": "sarcastic comeback or reaction in Portuguese, max 12 words (only if people_count >= 2)",
     "emoji_overlay": ["emoji1", "emoji2", "emoji3"]
   },
   "location_hint": "inferred location or environment in Portuguese",
@@ -22,6 +22,7 @@ const ANALYSIS_PROMPT = `Analyze this photo and return ONLY valid JSON with this
 
 Rules:
 - comedy_potential > 0.7 only for photos with expressive faces, funny situations, or group interactions
+- comedy_suggestion must always be sarcastic, self-aware or absurdist — think Brazilian stand-up humor
 - music_energy: high for action/party/sport, low for intimate/calm/nature
 - music_valence: high for happy/funny, low for nostalgic/emotional
 - Respond ONLY with JSON, no markdown, no explanation`;

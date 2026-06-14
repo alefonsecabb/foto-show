@@ -17,6 +17,21 @@ function preloadImage(src) {
   });
 }
 
+// Converts the pre-analyzed comedy_suggestion into the dialogue wire format.
+// Used as zero-latency fallback before the /api/dialogue response arrives.
+function analysisToDialogue(analysis) {
+  const cs = analysis?.comedy_suggestion;
+  if (!cs) return null;
+  const dialogues = [];
+  if (cs.character_0) dialogues.push({ person: 0, text: cs.character_0, position: 'top-left' });
+  if (cs.character_1) dialogues.push({ person: 1, text: cs.character_1, position: 'top-right' });
+  return {
+    dialogues,
+    floating_emojis: cs.emoji_overlay || [],
+    caption: null,
+  };
+}
+
 export default function Presentation() {
   const { photos, analyses, selectedTracks, spotifyToken, setStep } =
     usePresentationStore();
@@ -30,7 +45,7 @@ export default function Presentation() {
   // Two stacked layers — slot A and slot B. We crossfade between them.
   const [layerA, setLayerA] = useState(() => photos[0] || null);
   const [layerB, setLayerB] = useState(null);
-  const [activeLayer, setActiveLayer] = useState('A'); // which one is visible
+  const [activeLayer, setActiveLayer] = useState('A');
   const [transitioning, setTransitioning] = useState(false);
 
   const [idx, setIdx] = useState(0);
@@ -42,7 +57,7 @@ export default function Presentation() {
   const photo = photos[idx];
   const analysis = photo ? analyses[photo.name] : null;
 
-  // Load Spotify Web Playback SDK and play matching track
+  // Load Spotify Web Playback SDK
   useEffect(() => {
     if (!spotifyToken || !selectedTracks.length) return;
 
@@ -78,6 +93,7 @@ export default function Presentation() {
     }
   }, [selectedTracks, spotifyToken]);
 
+  // Returns cached dialogue; fetches from /api/dialogue if not cached yet.
   const fetchDialogue = useCallback(async (photoEntry) => {
     if (!photoEntry) return null;
     const cached = dialogueCache.current.get(photoEntry.name);
@@ -110,11 +126,8 @@ export default function Presentation() {
 
     await preloadImage(next.url);
 
-    // Place the next photo on the inactive layer, then flip activeLayer
-    // to trigger CSS crossfade.
     if (activeLayer === 'A') {
       setLayerB(next);
-      // small delay so React commits the new img before changing opacity
       requestAnimationFrame(() => {
         setActiveLayer('B');
         setTransitioning(true);
@@ -129,37 +142,43 @@ export default function Presentation() {
 
     setIdx(nextIdx);
 
-    setTimeout(async () => {
+    setTimeout(() => {
       setTransitioning(false);
       transitioningRef.current = false;
+
+      // Show pre-analyzed content immediately — zero latency.
+      setCurrentDialogue(analysisToDialogue(analyses[next.name]));
       setShowOverlays(true);
 
-      const d = await fetchDialogue(next);
-      setCurrentDialogue(d);
-
-      await playTrack(nextIdx);
-
-      if (nextIdx + 1 < photos.length) {
-        fetchDialogue(photos[nextIdx + 1]);
-      }
-
+      // Timer starts right away, not after API call.
       timerRef.current = setTimeout(
         () => nextIdx + 1 < photos.length && goTo(nextIdx + 1),
         PHOTO_DURATION * 1000
       );
-    }, TRANSITION_DURATION * 1000);
-  }, [activeLayer, photos, fetchDialogue, playTrack]);
 
-  // Initial load — show first photo, fetch its dialogue, schedule next
+      // Enrich with sarcastic API dialogue in background.
+      fetchDialogue(next).then(d => { if (d) setCurrentDialogue(d); });
+
+      // Prefetch dialogue for the photo after next.
+      if (nextIdx + 1 < photos.length) fetchDialogue(photos[nextIdx + 1]);
+
+      playTrack(nextIdx);
+    }, TRANSITION_DURATION * 1000);
+  }, [activeLayer, photos, analyses, fetchDialogue, playTrack]);
+
+  // Initial load — show first photo immediately with pre-analyzed content.
   useEffect(() => {
     if (!photos.length) return;
+
+    // Zero-latency fallback from pre-analyzed data.
+    setCurrentDialogue(analysisToDialogue(analyses[photos[0].name]));
     setShowOverlays(true);
 
-    (async () => {
-      const d = await fetchDialogue(photos[0]);
-      setCurrentDialogue(d);
-      if (photos.length > 1) fetchDialogue(photos[1]);
-    })();
+    // Enrich first photo with API in background.
+    fetchDialogue(photos[0]).then(d => { if (d) setCurrentDialogue(d); });
+
+    // Prefetch second photo.
+    if (photos.length > 1) fetchDialogue(photos[1]);
 
     playTrack(0);
 
@@ -178,13 +197,8 @@ export default function Presentation() {
     controlsTimer.current = setTimeout(() => setShowControls(false), 3000);
   }
 
-  function handlePrev() {
-    if (idx > 0) goTo(idx - 1);
-  }
-
-  function handleNext() {
-    if (idx < photos.length - 1) goTo(idx + 1);
-  }
+  function handlePrev() { if (idx > 0) goTo(idx - 1); }
+  function handleNext() { if (idx < photos.length - 1) goTo(idx + 1); }
 
   function handleExit() {
     clearTimeout(timerRef.current);
@@ -207,12 +221,7 @@ export default function Presentation() {
     >
       {/* Blurred backdrop of the currently visible photo */}
       {visiblePhoto && (
-        <img
-          src={visiblePhoto.url}
-          alt=""
-          className={styles.blurBg}
-          aria-hidden
-        />
+        <img src={visiblePhoto.url} alt="" className={styles.blurBg} aria-hidden />
       )}
 
       {/* Layer A */}
@@ -239,7 +248,7 @@ export default function Presentation() {
         aria-hidden
       />
 
-      {/* Comic overlays — always shown when a photo is settled */}
+      {/* Comic overlays */}
       {showOverlays && (
         <div className={styles.overlayLayer}>
           <SpeechBubble dialogue={currentDialogue} visible={showOverlays} />
@@ -259,7 +268,6 @@ export default function Presentation() {
         </div>
 
         <button className={styles.ctrl} onClick={handleNext} disabled={idx === photos.length - 1}>›</button>
-
         <button className={styles.exitBtn} onClick={handleExit} title="Sair">✕</button>
       </div>
 

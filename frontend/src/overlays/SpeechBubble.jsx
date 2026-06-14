@@ -19,7 +19,7 @@ export default function SpeechBubble({ dialogue, visible }) {
     });
   }, [visible, dialogue]);
 
-  if (!dialogue?.dialogues?.length) return null;
+  if (!dialogue) return null;
 
   return (
     <>
